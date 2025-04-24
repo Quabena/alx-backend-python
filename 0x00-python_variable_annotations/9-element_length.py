@@ -5,21 +5,11 @@ each containing an element and its length.
 """
 
 
-from typing import List, Tuple, Iterable, TypeVar
-
-T = TypeVar('T', bound=Iterable)
+from typing import List, Tuple, Iterable, Sequence
 
 
-def element_length(lst: List[T]) -> List[Tuple[T, int]]:
+def element_length(lst: Iterable[Sequence]) -> List[Tuple[Sequence, int]]:
     """
-    Returns a list of tuples with elements and their lengths.
-
-    Args:
-        lst (List[T]): A list of iterable elements.
-
-    Returns:
-        List[Tuple[T, int]]: A list of tuples where each tuple contains
-        an element from the list and its length.
+    Computes the length of a list of sequences.
     """
-
     return [(i, len(i)) for i in lst]
