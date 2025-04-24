@@ -3,17 +3,14 @@
 This module defines a function that safely retrieves a value from a mapping.
 """
 
-from typing import Any, Mapping, TypeVar, Optional
+from typing import Any, Mapping, TypeVar, Union
 
 T = TypeVar('T')
-K = TypeVar('K')
+Res = Union[Any, T]
+Def = Union[T, None]
 
 
-def safely_get_value(
-    dct: Mapping[K, T],
-    key: K,
-    default: Optional[T] = None
-) -> Optional[T]:
+def safely_get_value(dct: Mapping, key: Any, default: Def = None) -> Res:
     """
     Retrieves a value from a mapping if the key exists,
     otherwise returns default.
@@ -28,4 +25,5 @@ def safely_get_value(
     """
     if key in dct:
         return dct[key]
-    return default
+    else:
+        return default
