@@ -1,33 +1,27 @@
 #!/usr/bin/env python3
 """
-This module defines a function that repeats elements in a list
-a number of times (zoom effect).
+This module defines a function that returns a new list
+by repeating each element of a tuple a specified number of times.
 """
 
-from typing import List, Any
+from typing import Tuple, List, Any
 
 
-def zoom_array(lst: List[Any], factor: int = 2) -> List[Any]:
+def zoom_array(lst: Tuple, factor: int = 2) -> List:
     """
-    Returns a new list where each element in the input list
-    is repeated 'factor' number of times.
+    Returns a zoomed-in list where each element of the input tuple
+    is repeated 'factor' times.
 
     Args:
-        lst (List[Any]): The input list.
-        factor (int): Number of times to repeat each element.
+        lst (Tuple): The input tuple of elements.
+        factor (int): Number of repetitions for each element.
 
     Returns:
-        List[Any]: The zoomed-in list.
+        List: The zoomed-in list.
     """
-    zoomed_in: List[Any] = [
+    zoomed_in: List = [
         item for item in lst
         for _ in range(factor)
     ]
     return zoomed_in
-
-
-array = [12, 72, 91]
-
-zoom_2x = zoom_array(array)       # Valid: factor = 2 (default)
-zoom_3x = zoom_array(array, 3)    # Fixed: now factor is an int
 
