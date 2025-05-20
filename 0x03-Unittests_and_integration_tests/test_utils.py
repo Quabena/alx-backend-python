@@ -1,101 +1,82 @@
 #!/usr/bin/env python3
-'''A module for testing the utils module
-'''
+"""Module to unit test helper functions in utils.py
+"""
 
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import patch, Mock
 from parameterized import parameterized
+from typing import Any, Dict, Mapping, Sequence, Union
 
-from typing import (
-    Dict,
-    Mapping,
-    Sequence,
-    Tuple,
-    Union,
-)
-
-from utils import (
-    access_nested_map,
-    get_json,
-    memoize,
-)
+from utils import access_nested_map, get_json, memoize
 
 
 class TestAccessNestedMap(unittest.TestCase):
-    '''Test case for `utils.access_nested_map` function.
-    '''
+    """Unit tests for the access_nested_map function."""
 
     @parameterized.expand([
-        ({"a": 1}, ("a",), 1),
-        ({"a": {"b": 2}}, ("a",), {"b": 2}),
-        ({"a": {"b": 2}}, ("a", "b"), 2),
+        ({"key": 10}, ("key",), 10),
+        ({"outer": {"inner": 5}}, ("outer",), {"inner": 5}),
+        ({"outer": {"inner": 5}}, ("outer", "inner"), 5),
     ])
-    def test_access_nested_map(
-            self,
-            nested_map: Mapping,
-            path: Sequence,
-            expected: Union[Dict, int]
-            ) -> None:
-        '''Tests `access_nexted_map`'s output
-        '''
-        self.assertEqual(access_nested_map(nested_map, path), expected)
+    def test_valid_access(
+        self,
+        data: Mapping,
+        keys: Sequence[str],
+        expected_result: Union[int, Dict[str, Any]]
+    ) -> None:
+        """Test successful nested access with valid keys."""
+        self.assertEqual(access_nested_map(data, keys), expected_result)
 
     @parameterized.expand([
-        ({}, ("a",), KeyError),
-        ({"a": 1}, ("a", "b"), KeyError),
+        ({}, ("missing",), KeyError),
+        ({"alpha": 3}, ("alpha", "beta"), KeyError),
     ])
-    def test_access_nested_map_exception(
-            self,
-            nested_map: Mapping,
-            path: Sequence,
-            exception: Exception,
-            ) -> None:
-        '''Tests `access_nested_map`'s exception raising.
-        '''
-        with self.assertRaises(exception):
-            access_nested_map(nested_map, path)
+    def test_invalid_access_raises(
+        self,
+        data: Mapping,
+        keys: Sequence[str],
+        expected_exc: Exception
+    ) -> None:
+        """Ensure KeyError is raised for invalid paths."""
+        with self.assertRaises(expected_exc):
+            access_nested_map(data, keys)
 
 
-class TestGetJson(unittest.TestCase):
-    '''Tests the `utils.get_json` function.
-    '''
+class TestGetJsonFunction(unittest.TestCase):
+    """Unit tests for the get_json function."""
 
     @parameterized.expand([
-        ("http://example.com", {"payload": True}),
-        ("http://holberton.io", {"payload": False}),
+        ("https://example.com", {"data": 123}),
+        ("https://school.io", {"active": True}),
     ])
-    def test_get_json(
-            self,
-            test_url: str,
-            test_payload: Dict,
-            ) -> None:
-        '''Tests `get_json`'s output.
-        '''
-
-        attrs = {'json.return_value': test_payload}
-
-        with patch("requests.get", return_value=Mock(**attrs)) as req_get:
-            self.assertEqual(get_json(test_url), test_payload)
-            req_get.assert_called_once_with(test_url)
+    def test_get_json_success(
+        self,
+        url: str,
+        mock_response: Dict[str, Any]
+    ) -> None:
+        """Test that get_json returns the correct response payload."""
+        mock_attrs = {"json.return_value": mock_response}
+        with patch("requests.get", return_value=Mock(**mock_attrs)) as mock_get:
+            result = get_json(url)
+            self.assertEqual(result, mock_response)
+            mock_get.assert_called_once_with(url)
 
 
-class TestMemoize(unittest.TestCase):
-    """Tests the `memoize` function."""
-    def test_memoize(self) -> None:
-        """Tests `memoize`'s output."""
-        class TestClass:
-            def a_method(self):
-                return 42
+class TestMemoizeFunction(unittest.TestCase):
+    """Unit tests for the memoize decorator."""
+
+    def test_memoization(self) -> None:
+        """Test that memoize caches method results."""
+        class Sample:
+            def compute(self) -> int:
+                return 99
 
             @memoize
-            def a_property(self):
-                return self.a_method()
-        with patch.object(
-                TestClass,
-                "a_method",
-                return_value=lambda: 42,
-                ) as memo_fxn:
-            test_class = TestClass()
-            self.assertEqual(test_class.a_property(), 42)
-            self.assertEqual(test_class.a_property(), 42)
-            memo_fxn.assert_called_once()
+            def cached_property(self) -> int:
+                return self.compute()
+
+        with patch.object(Sample, "compute", return_value=99) as mock_method:
+            instance = Sample()
+            self.assertEqual(instance.cached_property(), 99)
+            self.assertEqual(instance.cached_property(), 99)
+            mock_method.assert_called_once()
